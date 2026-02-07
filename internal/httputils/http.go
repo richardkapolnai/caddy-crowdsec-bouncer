@@ -81,9 +81,7 @@ func writeBanResponse(w http.ResponseWriter, statusCode int) error {
 	if code <= 0 {
 		code = http.StatusForbidden
 	}
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.WriteHeader(code)
-	return nil
+	return caddyhttp.Error(code, fmt.Errorf("banned by crowdsec"))
 }
 
 // writeCaptchaResponse (currently) writes a 403 status as response
@@ -102,7 +100,5 @@ func writeThrottleResponse(w http.ResponseWriter, duration string) error {
 	// TODO: round this to the nearest multiple of the ticker interval? and/or include the time the decision was processed from stream vs. request time?
 	retryAfter := fmt.Sprintf("%.0f", d.Seconds())
 	w.Header().Add("Retry-After", retryAfter)
-	w.WriteHeader(http.StatusTooManyRequests)
-
-	return nil
+	return caddyhttp.Error(http.StatusTooManyRequests, fmt.Errorf("throttled by crowdsec"))
 }
